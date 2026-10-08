@@ -1,6 +1,8 @@
 package com.coinrush.game
 
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
@@ -11,6 +13,58 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import kotlin.random.Random
+
+class RushItemView(context: android.content.Context, private val itemType: Int) : android.view.View(context) {
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+    private val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeWidth = 8f
+        strokeCap = Paint.Cap.ROUND
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+        val cx = width / 2f
+        val cy = height / 2f
+        val r = (width.coerceAtMost(height) * 0.34f)
+
+        when (itemType) {
+            0 -> {
+                paint.color = Color.rgb(255, 193, 7)
+                canvas.drawCircle(cx, cy, r, paint)
+                stroke.color = Color.rgb(180, 120, 0)
+                canvas.drawCircle(cx, cy, r - 2f, stroke)
+                paint.color = Color.rgb(255, 236, 120)
+                paint.textSize = r * 0.95f
+                paint.typeface = Typeface.DEFAULT_BOLD
+                paint.textAlign = Paint.Align.CENTER
+                canvas.drawText("1", cx, cy + r * 0.33f, paint)
+            }
+            1 -> {
+                paint.color = Color.rgb(35, 35, 35)
+                canvas.drawCircle(cx, cy + r * 0.08f, r, paint)
+                stroke.color = Color.rgb(10, 10, 10)
+                canvas.drawCircle(cx, cy + r * 0.08f, r - 2f, stroke)
+                stroke.color = Color.rgb(240, 170, 40)
+                stroke.strokeWidth = 7f
+                canvas.drawLine(cx + r * 0.15f, cy - r * 0.82f, cx + r * 0.48f, cy - r * 1.12f, stroke)
+                paint.color = Color.rgb(255, 90, 40)
+                canvas.drawCircle(cx + r * 0.53f, cy - r * 1.16f, r * 0.16f, paint)
+            }
+            else -> {
+                stroke.color = Color.rgb(75, 75, 75)
+                stroke.strokeWidth = 10f
+                canvas.drawCircle(cx, cy, r, stroke)
+                canvas.drawLine(cx, cy, cx, cy - r * 0.55f, stroke)
+                canvas.drawLine(cx, cy, cx + r * 0.38f, cy + r * 0.25f, stroke)
+                paint.color = Color.rgb(80, 80, 80)
+                canvas.drawCircle(cx, cy, r * 0.12f, paint)
+                paint.color = Color.rgb(120, 95, 255)
+                canvas.drawCircle(cx, cy - r * 1.05f, r * 0.14f, paint)
+            }
+        }
+    }
+}
 
 class MainActivity : AppCompatActivity() {
     private lateinit var root: LinearLayout
@@ -214,21 +268,11 @@ class MainActivity : AppCompatActivity() {
             else -> 2
         }
 
-        // Larger touch/drawing area keeps the complete emoji glyph visible.
+        // Use a custom scalable icon view so the complete symbol is always visible.
         val size = (gameArea.width.coerceAtMost(gameArea.height) * 0.22f)
             .toInt().coerceIn(104, 136)
 
-        val item = TextView(this).apply {
-            text = when (type) {
-                0 -> "🪙"
-                1 -> "💣"
-                else -> "⏱️"
-            }
-            textSize = 52f
-            gravity = Gravity.CENTER
-            includeFontPadding = true
-            setLineSpacing(0f, 1.15f)
-            setPadding(10, 10, 10, 10)
+        val item = RushItemView(this, type).apply {
             isClickable = true
             setOnClickListener {
                 if (!gameRunning) return@setOnClickListener
@@ -242,7 +286,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 updateHud()
                 (parent as? FrameLayout)?.removeView(this)
-                tag = null
             }
         }
 
