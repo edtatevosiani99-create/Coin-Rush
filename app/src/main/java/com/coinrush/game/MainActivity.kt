@@ -52,7 +52,14 @@ class MainActivity : AppCompatActivity() {
         }
         root.addView(top, LinearLayout.LayoutParams(-1, 88))
 
-        scoreText = label("Score: 0", 20f).apply {\n            background = roundedColor(Color.rgb(46, 134, 222), 18f)\n            setPadding(22, 0, 22, 0)\n        }\n        timeText = label("Time: 30", 20f).apply {\n            background = roundedColor(Color.rgb(123, 97, 255), 18f)\n            setPadding(22, 0, 22, 0)\n        }
+        scoreText = label("Score: 0", 20f).apply {
+            background = roundedColor(Color.rgb(46, 134, 222), 18f)
+            setPadding(22, 0, 22, 0)
+        }
+        timeText = label("Time: 30", 20f).apply {
+            background = roundedColor(Color.rgb(123, 97, 255), 18f)
+            setPadding(22, 0, 22, 0)
+        }
 
         top.addView(scoreText, FrameLayout.LayoutParams(-2, -1).apply {
             gravity = Gravity.START or Gravity.CENTER_VERTICAL
@@ -64,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         gameArea = FrameLayout(this).apply {
-            setBackgroundColor(Color.rgb(18, 18, 24))
+            setBackgroundColor(Color.rgb(191, 232, 255))
         }
         root.addView(gameArea, LinearLayout.LayoutParams(-1, 0, 1f))
 
@@ -72,7 +79,12 @@ class MainActivity : AppCompatActivity() {
         ViewCompat.requestApplyInsets(root)
     }
 
-    private fun roundedColor(color: Int, radius: Float) = GradientDrawable().apply {\n        setColor(color)\n        cornerRadius = radius\n    }\n\n    private fun label(textValue: String, size: Float) = TextView(this).apply {
+    private fun roundedColor(color: Int, radius: Float) = GradientDrawable().apply {
+        setColor(color)
+        cornerRadius = radius
+    }
+
+    private fun label(textValue: String, size: Float) = TextView(this).apply {
         text = textValue
         textSize = size
         setTextColor(Color.WHITE)
