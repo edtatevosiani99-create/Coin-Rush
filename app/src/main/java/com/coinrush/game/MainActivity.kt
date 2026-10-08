@@ -146,7 +146,18 @@ class MainActivity : AppCompatActivity() {
         timer?.cancel()
         stopSpawning()
 
-        timer = object : CountDownTimer(30000L, 100L) {
+        startTimer(30000L)
+
+        gameArea.post {
+            if (!gameRunning) return@post
+            repeat(3) { spawnItem() }
+            startSpawning()
+        }
+    }
+
+    private fun startTimer(durationMs: Long) {
+        timer?.cancel()
+        timer = object : CountDownTimer(durationMs, 100L) {
             override fun onTick(ms: Long) {
                 remainingMs = ms
                 updateHud()
@@ -160,11 +171,11 @@ class MainActivity : AppCompatActivity() {
                 showGameOver()
             }
         }.start()
+    }
 
-        gameArea.post {
-            if (!gameRunning) return@post
-            repeat(3) { spawnItem() }
-            startSpawning()
+    private fun restartTimer() {
+        if (gameRunning && remainingMs > 0) {
+            startTimer(remainingMs)
         }
     }
 
@@ -215,7 +226,10 @@ class MainActivity : AppCompatActivity() {
                 when (type) {
                     0 -> score += 1
                     1 -> score = (score - 2).coerceAtLeast(0)
-                    else -> remainingMs = (remainingMs + 2000L).coerceAtMost(30000L)
+                    else -> {
+                        remainingMs = (remainingMs + 2000L).coerceAtMost(30000L)
+                        restartTimer()
+                    }
                 }
                 updateHud()
                 (parent as? FrameLayout)?.removeView(this)
