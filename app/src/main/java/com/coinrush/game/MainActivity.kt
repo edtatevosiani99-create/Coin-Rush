@@ -28,8 +28,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.statusBarColor = Color.rgb(18, 18, 24)
-        window.navigationBarColor = Color.rgb(18, 18, 24)
+        window.statusBarColor = Color.rgb(92, 176, 220)
+        window.navigationBarColor = Color.rgb(92, 176, 220)
         bestScore = prefs.getInt("best_score", 0)
         buildUi()
         showStartScreen()
@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
     private fun buildUi() {
         root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(Color.rgb(18, 18, 24))
+            setBackgroundColor(Color.rgb(191, 232, 255))
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
@@ -48,12 +48,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         val top = FrameLayout(this).apply {
-            setBackgroundColor(Color.rgb(24, 24, 32))
+            setBackgroundColor(Color.rgb(142, 208, 242))
         }
         root.addView(top, LinearLayout.LayoutParams(-1, 88))
 
-        scoreText = label("Счёт: 0", 20f)
-        timeText = label("Время: 30", 20f)
+        scoreText = label("Score: 0", 20f).apply {\n            background = roundedColor(Color.rgb(46, 134, 222), 18f)\n            setPadding(22, 0, 22, 0)\n        }\n        timeText = label("Time: 30", 20f).apply {\n            background = roundedColor(Color.rgb(123, 97, 255), 18f)\n            setPadding(22, 0, 22, 0)\n        }
 
         top.addView(scoreText, FrameLayout.LayoutParams(-2, -1).apply {
             gravity = Gravity.START or Gravity.CENTER_VERTICAL
@@ -73,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         ViewCompat.requestApplyInsets(root)
     }
 
-    private fun label(textValue: String, size: Float) = TextView(this).apply {
+    private fun roundedColor(color: Int, radius: Float) = GradientDrawable().apply {\n        setColor(color)\n        cornerRadius = radius\n    }\n\n    private fun label(textValue: String, size: Float) = TextView(this).apply {
         text = textValue
         textSize = size
         setTextColor(Color.WHITE)
@@ -91,7 +90,7 @@ class MainActivity : AppCompatActivity() {
             isClickable = true
             isFocusable = true
             background = GradientDrawable().apply {
-                setColor(Color.rgb(45, 105, 220))
+                setColor(Color.rgb(35, 180, 85))
                 cornerRadius = 22f
             }
             setPadding(20, 0, 20, 0)
@@ -116,10 +115,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         box.addView(label("🪙 COIN RUSH", 32f), LinearLayout.LayoutParams(-1, 90))
-        box.addView(label("Собирай монеты и следи за временем!", 17f), LinearLayout.LayoutParams(-1, 60))
-        box.addView(label("Лучший счёт: " + bestScore, 18f), LinearLayout.LayoutParams(-1, 60))
+        box.addView(label("Collect coins and beat the clock!", 17f), LinearLayout.LayoutParams(-1, 60))
+        box.addView(label("Best score: " + bestScore, 18f), LinearLayout.LayoutParams(-1, 60))
 
-        box.addView(makeGameButton("НАЧАТЬ ИГРУ") { startGame() },
+        box.addView(makeGameButton("PLAY") { startGame() },
             LinearLayout.LayoutParams(-1, 72).apply { setMargins(0, 15, 0, 0) })
 
         screen.addView(box, FrameLayout.LayoutParams(-1, -2).apply { gravity = Gravity.CENTER })
@@ -221,8 +220,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateHud() {
-        scoreText.text = "Счёт: " + score
-        timeText.text = "Время: " + ((remainingMs + 999) / 1000)
+        scoreText.text = "Score: " + score
+        timeText.text = "Time: " + ((remainingMs + 999) / 1000)
     }
 
     private fun saveBestScore() {
@@ -236,7 +235,7 @@ class MainActivity : AppCompatActivity() {
         saveBestScore()
 
         val overlay = FrameLayout(this).apply {
-            setBackgroundColor(Color.argb(245, 18, 18, 24))
+            setBackgroundColor(Color.argb(245, 191, 232, 255))
             isClickable = true
         }
 
@@ -246,11 +245,11 @@ class MainActivity : AppCompatActivity() {
             setPadding(40, 20, 40, 20)
         }
 
-        box.addView(label("ИГРА ОКОНЧЕНА", 28f), LinearLayout.LayoutParams(-1, 70))
-        box.addView(label("Твой счёт: " + score, 23f), LinearLayout.LayoutParams(-1, 70))
-        box.addView(label("Лучший счёт: " + bestScore, 20f), LinearLayout.LayoutParams(-1, 60))
+        box.addView(label("GAME OVER", 28f), LinearLayout.LayoutParams(-1, 70))
+        box.addView(label("Your score: " + score, 23f), LinearLayout.LayoutParams(-1, 70))
+        box.addView(label("Best score: " + bestScore, 20f), LinearLayout.LayoutParams(-1, 60))
 
-        box.addView(makeGameButton("НАЧАТЬ ЗАНОВО") { startGame() },
+        box.addView(makeGameButton("PLAY AGAIN") { startGame() },
             LinearLayout.LayoutParams(-1, 72).apply { setMargins(0, 18, 0, 0) })
 
         overlay.addView(box, FrameLayout.LayoutParams(-1, -2).apply { gravity = Gravity.CENTER })
