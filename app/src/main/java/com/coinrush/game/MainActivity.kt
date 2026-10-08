@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
   gameArea.addView(v,FrameLayout.LayoutParams(size,size).apply{leftMargin=Random.nextInt(maxX);topMargin=Random.nextInt(maxY)})
  }
  private fun updateHud(){
-  scoreText.text="Счёт: $$score"
+  scoreText.text="Счёт: $score"
   timeText.text="Время: ${(remainingMs+999)/1000}"
  }
  private fun showGameOver(){
@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
   val box=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;gravity=Gravity.CENTER}
   overlay.addView(box,FrameLayout.LayoutParams(-1,-2).apply{gravity=Gravity.CENTER;leftMargin=40;rightMargin=40})
   box.addView(label("ИГРА ОКОНЧЕНА",28f),LinearLayout.LayoutParams(-1,70))
-  box.addView(label("Твой счёт: $$score",23f),LinearLayout.LayoutParams(-1,70))
+  box.addView(label("Твой счёт: $score",23f),LinearLayout.LayoutParams(-1,70))
   box.addView(Button(this).apply{text="ИГРАТЬ СНОВА";textSize=18f;setOnClickListener{gameArea.removeView(overlay);startGame()}},LinearLayout.LayoutParams(-1,65))
   gameArea.addView(overlay,FrameLayout.LayoutParams(-1,-1))
  }
