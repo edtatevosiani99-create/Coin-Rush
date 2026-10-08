@@ -2,10 +2,10 @@ package com.coinrush.game
 
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.Gravity
-import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     private var timer: CountDownTimer? = null
     private val handler by lazy { android.os.Handler(mainLooper) }
     private var spawnTask: Runnable? = null
+    private var gameRunning = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,9 +81,28 @@ class MainActivity : AppCompatActivity() {
         gravity = Gravity.CENTER
     }
 
+    private fun makeGameButton(textValue: String, onClick: () -> Unit): TextView {
+        return TextView(this).apply {
+            text = textValue
+            textSize = 18f
+            setTextColor(Color.WHITE)
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            isClickable = true
+            isFocusable = true
+            background = GradientDrawable().apply {
+                setColor(Color.rgb(45, 105, 220))
+                cornerRadius = 22f
+            }
+            setPadding(20, 0, 20, 0)
+            setOnClickListener { onClick() }
+        }
+    }
+
     private fun showStartScreen() {
         timer?.cancel()
         stopSpawning()
+        gameRunning = false
         gameArea.removeAllViews()
 
         val screen = FrameLayout(this).apply {
@@ -99,22 +119,17 @@ class MainActivity : AppCompatActivity() {
         box.addView(label("Собирай монеты и следи за временем!", 17f), LinearLayout.LayoutParams(-1, 60))
         box.addView(label("Лучший счёт: " + bestScore, 18f), LinearLayout.LayoutParams(-1, 60))
 
-        val startButton = Button(this).apply {
-            text = "НАЧАТЬ ИГРУ"
-            textSize = 19f
-            setOnClickListener { startGame() }
-        }
-        box.addView(startButton, LinearLayout.LayoutParams(-1, 70))
+        box.addView(makeGameButton("НАЧАТЬ ИГРУ") { startGame() },
+            LinearLayout.LayoutParams(-1, 72).apply { setMargins(0, 15, 0, 0) })
 
-        screen.addView(box, FrameLayout.LayoutParams(-1, -2).apply {
-            gravity = Gravity.CENTER
-        })
+        screen.addView(box, FrameLayout.LayoutParams(-1, -2).apply { gravity = Gravity.CENTER })
         gameArea.addView(screen, FrameLayout.LayoutParams(-1, -1))
     }
 
     private fun startGame() {
         score = 0
         remainingMs = 30000L
+        gameRunning = true
         updateHud()
         gameArea.removeAllViews()
         timer?.cancel()
@@ -128,22 +143,29 @@ class MainActivity : AppCompatActivity() {
 
             override fun onFinish() {
                 remainingMs = 0
+                gameRunning = false
                 updateHud()
                 stopSpawning()
                 showGameOver()
             }
         }.start()
 
-        handler.postDelayed({ startSpawning() }, 120)
+        gameArea.post {
+            if (!gameRunning) return@post
+            repeat(3) { spawnItem() }
+            startSpawning()
+        }
     }
 
     private fun startSpawning() {
         stopSpawning()
         val task = object : Runnable {
             override fun run() {
-                if (remainingMs <= 0) return
-                spawnItem()
-                handler.postDelayed(this, Random.nextLong(500L, 900L))
+                if (!gameRunning || remainingMs <= 0) return
+                if (gameArea.width > 0 && gameArea.height > 0 && gameArea.childCount < 9) {
+                    spawnItem()
+                }
+                handler.postDelayed(this, Random.nextLong(350L, 650L))
             }
         }
         spawnTask = task
@@ -156,28 +178,33 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun spawnItem() {
+        if (!gameRunning || gameArea.width <= 0 || gameArea.height <= 0) return
+
         val roll = Random.nextInt(100)
         val type = when {
-            roll < 70 -> 0
-            roll < 90 -> 1
+            roll < 65 -> 0
+            roll < 88 -> 1
             else -> 2
         }
 
-        val size = 90
+        val size = (gameArea.width.coerceAtMost(gameArea.height) * 0.16f)
+            .toInt().coerceIn(64, 100)
+
         val item = TextView(this).apply {
             text = when (type) {
                 0 -> "🪙"
                 1 -> "💣"
                 else -> "⏱️"
             }
-            textSize = 48f
+            textSize = if (size >= 90) 48f else 40f
             gravity = Gravity.CENTER
             isClickable = true
             setOnClickListener {
+                if (!gameRunning) return@setOnClickListener
                 when (type) {
                     0 -> score += 1
-                    1 -> score -= 2
-                    else -> remainingMs += 2000L
+                    1 -> score = (score - 2).coerceAtLeast(0)
+                    else -> remainingMs = (remainingMs + 2000L).coerceAtMost(30000L)
                 }
                 updateHud()
                 (parent as? FrameLayout)?.removeView(this)
@@ -188,8 +215,8 @@ class MainActivity : AppCompatActivity() {
         val maxY = (gameArea.height - size).coerceAtLeast(1)
 
         gameArea.addView(item, FrameLayout.LayoutParams(size, size).apply {
-            leftMargin = Random.nextInt(maxX)
-            topMargin = Random.nextInt(maxY)
+            leftMargin = Random.nextInt(0, maxX + 1)
+            topMargin = Random.nextInt(0, maxY + 1)
         })
     }
 
@@ -207,36 +234,34 @@ class MainActivity : AppCompatActivity() {
 
     private fun showGameOver() {
         saveBestScore()
+
         val overlay = FrameLayout(this).apply {
-            setBackgroundColor(Color.argb(240, 18, 18, 24))
+            setBackgroundColor(Color.argb(245, 18, 18, 24))
+            isClickable = true
         }
 
         val box = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
-            setPadding(40, 0, 40, 0)
+            setPadding(40, 20, 40, 20)
         }
 
         box.addView(label("ИГРА ОКОНЧЕНА", 28f), LinearLayout.LayoutParams(-1, 70))
         box.addView(label("Твой счёт: " + score, 23f), LinearLayout.LayoutParams(-1, 70))
         box.addView(label("Лучший счёт: " + bestScore, 20f), LinearLayout.LayoutParams(-1, 60))
 
-        box.addView(Button(this).apply {
-            text = "НАЧАТЬ ЗАНОВО"
-            textSize = 18f
-            setOnClickListener { startGame() }
-        }, LinearLayout.LayoutParams(-1, 65))
+        box.addView(makeGameButton("НАЧАТЬ ЗАНОВО") { startGame() },
+            LinearLayout.LayoutParams(-1, 72).apply { setMargins(0, 18, 0, 0) })
 
-        overlay.addView(box, FrameLayout.LayoutParams(-1, -2).apply {
-            gravity = Gravity.CENTER
-        })
-
+        overlay.addView(box, FrameLayout.LayoutParams(-1, -2).apply { gravity = Gravity.CENTER })
+        gameArea.removeAllViews()
         gameArea.addView(overlay, FrameLayout.LayoutParams(-1, -1))
     }
 
     override fun onDestroy() {
         timer?.cancel()
         stopSpawning()
+        gameRunning = false
         super.onDestroy()
     }
 }
