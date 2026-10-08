@@ -55,10 +55,12 @@ class MainActivity : AppCompatActivity() {
         scoreText = label("Score: 0", 20f).apply {
             background = roundedColor(Color.rgb(46, 134, 222), 18f)
             setPadding(22, 0, 22, 0)
+            includeFontPadding = true
         }
         timeText = label("Time: 30", 20f).apply {
             background = roundedColor(Color.rgb(123, 97, 255), 18f)
             setPadding(22, 0, 22, 0)
+            includeFontPadding = true
         }
 
         top.addView(scoreText, FrameLayout.LayoutParams(-2, -1).apply {
@@ -90,6 +92,7 @@ class MainActivity : AppCompatActivity() {
         setTextColor(Color.WHITE)
         typeface = Typeface.DEFAULT_BOLD
         gravity = Gravity.CENTER
+        includeFontPadding = true
     }
 
     private fun makeGameButton(textValue: String, onClick: () -> Unit): TextView {
@@ -184,7 +187,9 @@ class MainActivity : AppCompatActivity() {
         val task = object : Runnable {
             override fun run() {
                 if (!gameRunning || remainingMs <= 0) return
-                if (gameArea.width > 0 && gameArea.height > 0 && gameArea.childCount < 9) {
+                // No artificial item-count limit: new items keep appearing for
+                // the whole game. Bombs and time bonuses remove themselves after 3s.
+                if (gameArea.width > 0 && gameArea.height > 0) {
                     spawnItem()
                 }
                 handler.postDelayed(this, Random.nextLong(350L, 650L))
@@ -209,10 +214,9 @@ class MainActivity : AppCompatActivity() {
             else -> 2
         }
 
-        // Give every emoji enough room so the Android emoji font is never clipped.
-        // Keep the whole symbol comfortably inside the game area.
-        val size = (gameArea.width.coerceAtMost(gameArea.height) * 0.20f)
-            .toInt().coerceIn(88, 116)
+        // Larger touch/drawing area keeps the complete emoji glyph visible.
+        val size = (gameArea.width.coerceAtMost(gameArea.height) * 0.22f)
+            .toInt().coerceIn(104, 136)
 
         val item = TextView(this).apply {
             text = when (type) {
@@ -220,10 +224,11 @@ class MainActivity : AppCompatActivity() {
                 1 -> "💣"
                 else -> "⏱️"
             }
-            textSize = 42f
+            textSize = 52f
             gravity = Gravity.CENTER
             includeFontPadding = true
-            setPadding(8, 8, 8, 8)
+            setLineSpacing(0f, 1.15f)
+            setPadding(10, 10, 10, 10)
             isClickable = true
             setOnClickListener {
                 if (!gameRunning) return@setOnClickListener
@@ -237,6 +242,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 updateHud()
                 (parent as? FrameLayout)?.removeView(this)
+                tag = null
             }
         }
 
@@ -247,6 +253,16 @@ class MainActivity : AppCompatActivity() {
             leftMargin = Random.nextInt(0, maxX + 1)
             topMargin = Random.nextInt(0, maxY + 1)
         })
+
+        // Bombs and time bonuses disappear after 3 seconds if not pressed.
+        // Coins remain available until the end of the round.
+        if (type == 1 || type == 2) {
+            item.postDelayed({
+                if (item.parent === gameArea && gameRunning) {
+                    gameArea.removeView(item)
+                }
+            }, 3000L)
+        }
     }
 
     private fun updateHud() {
