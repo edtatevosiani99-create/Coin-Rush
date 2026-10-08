@@ -222,7 +222,7 @@ class MainActivity : AppCompatActivity() {
         box.addView(label("Лучший счёт: " + bestScore, 20f), LinearLayout.LayoutParams(-1, 60))
 
         box.addView(Button(this).apply {
-            text = "ИГРАТЬ СНОВА"
+            text = "НАЧАТЬ ЗАНОВО"
             textSize = 18f
             setOnClickListener { startGame() }
         }, LinearLayout.LayoutParams(-1, 65))
