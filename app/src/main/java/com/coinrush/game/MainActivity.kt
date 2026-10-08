@@ -209,8 +209,10 @@ class MainActivity : AppCompatActivity() {
             else -> 2
         }
 
-        val size = (gameArea.width.coerceAtMost(gameArea.height) * 0.16f)
-            .toInt().coerceIn(64, 100)
+        // Give every emoji enough room so the Android emoji font is never clipped.
+        // Keep the whole symbol comfortably inside the game area.
+        val size = (gameArea.width.coerceAtMost(gameArea.height) * 0.20f)
+            .toInt().coerceIn(88, 116)
 
         val item = TextView(this).apply {
             text = when (type) {
@@ -218,8 +220,10 @@ class MainActivity : AppCompatActivity() {
                 1 -> "💣"
                 else -> "⏱️"
             }
-            textSize = if (size >= 105) 56f else 50f
+            textSize = 42f
             gravity = Gravity.CENTER
+            includeFontPadding = true
+            setPadding(8, 8, 8, 8)
             isClickable = true
             setOnClickListener {
                 if (!gameRunning) return@setOnClickListener
