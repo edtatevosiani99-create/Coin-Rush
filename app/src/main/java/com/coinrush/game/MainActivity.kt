@@ -207,7 +207,7 @@ class MainActivity : AppCompatActivity() {
                 1 -> "💣"
                 else -> "⏱️"
             }
-            textSize = if (size >= 90) 48f else 40f
+            textSize = if (size >= 105) 56f else 50f
             gravity = Gravity.CENTER
             isClickable = true
             setOnClickListener {
@@ -257,7 +257,7 @@ class MainActivity : AppCompatActivity() {
             setPadding(40, 20, 40, 20)
         }
 
-        box.addView(label("GAME OVER", 28f), LinearLayout.LayoutParams(-1, 70))
+        box.addView(label("GAME OVER", 32f), LinearLayout.LayoutParams(-1, 90))
         box.addView(label("Your score: " + score, 23f), LinearLayout.LayoutParams(-1, 70))
         box.addView(label("Best score: " + bestScore, 20f), LinearLayout.LayoutParams(-1, 60))
 
