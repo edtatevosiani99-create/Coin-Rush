@@ -18,6 +18,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var scoreText: TextView
     private lateinit var timeText: TextView
     private var score = 0
+    private var bestScore = 0
+    private val prefs by lazy { getSharedPreferences("coin_rush", MODE_PRIVATE) }
     private var remainingMs = 30000L
     private var timer: CountDownTimer? = null
     private val handler by lazy { android.os.Handler(mainLooper) }
@@ -27,6 +29,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         window.statusBarColor = Color.rgb(18, 18, 24)
         window.navigationBarColor = Color.rgb(18, 18, 24)
+        bestScore = prefs.getInt("best_score", 0)
         buildUi()
         showStartScreen()
     }
@@ -93,7 +96,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         box.addView(label("🪙 COIN RUSH", 32f), LinearLayout.LayoutParams(-1, 90))
-        box.addView(label("Собирай монеты и следи за временем!", 17f), LinearLayout.LayoutParams(-1, 70))
+        box.addView(label("Собирай монеты и следи за временем!", 17f), LinearLayout.LayoutParams(-1, 60))
+        box.addView(label("Лучший счёт: " + bestScore, 18f), LinearLayout.LayoutParams(-1, 60))
 
         val startButton = Button(this).apply {
             text = "НАЧАТЬ ИГРУ"
@@ -194,7 +198,15 @@ class MainActivity : AppCompatActivity() {
         timeText.text = "Время: " + ((remainingMs + 999) / 1000)
     }
 
+    private fun saveBestScore() {
+        if (score > bestScore) {
+            bestScore = score
+            prefs.edit().putInt("best_score", bestScore).apply()
+        }
+    }
+
     private fun showGameOver() {
+        saveBestScore()
         val overlay = FrameLayout(this).apply {
             setBackgroundColor(Color.argb(240, 18, 18, 24))
         }
@@ -207,6 +219,7 @@ class MainActivity : AppCompatActivity() {
 
         box.addView(label("ИГРА ОКОНЧЕНА", 28f), LinearLayout.LayoutParams(-1, 70))
         box.addView(label("Твой счёт: " + score, 23f), LinearLayout.LayoutParams(-1, 70))
+        box.addView(label("Лучший счёт: " + bestScore, 20f), LinearLayout.LayoutParams(-1, 60))
 
         box.addView(Button(this).apply {
             text = "ИГРАТЬ СНОВА"
