@@ -218,9 +218,7 @@ class MainActivity : AppCompatActivity() {
                     else -> remainingMs = (remainingMs + 2000L).coerceAtMost(30000L)
                 }
                 updateHud()
-                if (type != 2) {
-                    (parent as? FrameLayout)?.removeView(this)
-                }
+                (parent as? FrameLayout)?.removeView(this)
             }
         }
 
